@@ -20,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from Regolith!');
 	});
 
+
 	context.subscriptions.push(disposable);
 }
 
