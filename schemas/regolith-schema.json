@@ -1,0 +1,67 @@
+{
+    "$id": "echo-npc",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/regolith",
+    "definitions": {
+        "regolith": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of your project. Will be used to generate RP and BP folders."
+                },
+                "profiles": {
+                    "type": "object",
+                    "patternProperties": {
+                        ".+?": {
+                            "$ref": "profile"
+                        }
+                    }
+                }
+            }
+        },
+        "profile": {
+            "type": "object",
+            "description": "Each profile describes a unique set of filters that should be run, and an output location.\nIt is perfectly fine to only have one filter, however\nyou may find it useful to have both a 'dev' and a 'build' profile for example, with different filters.",
+            "properties": {
+                "unsafe": {
+                    "description": "Must be set to true to run non standard-library filters.",
+                    "type": "boolean"
+                },
+                "export": {
+                    "$ref": "export"
+                },
+                "filters": {
+                    "type": "array",
+                    "description": "The list of filters that will be run. Runs in order, before finally exporting the pack.",
+                    "items": {
+                        "$ref": "filter"
+                    }
+                }
+            }
+        },
+        "export": {
+            "type": "object",
+            "properties": {
+                "target": {
+                    "type": "string",
+                    "description": "This determines what will happen with your addon, once it is compiled.",
+                    "anyOf": [
+                        {
+                            "const": "development",
+                            "description": "The RP will be placed into the 'development_resource_packs'.\nand the BP will be placed into 'development_behavior_packs' folder.\nThe name of the folders will be determined by the 'name' field in the config."
+                        },
+                        {
+                            "const": "none",
+                            "description": "The pack will not be exported at all. You may find the files in the 'build' directory."
+                        }
+                    ]
+                }
+            }
+        },
+        "filter": {
+            "type": "object"
+        } 
+    }
+}

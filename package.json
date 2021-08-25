@@ -14,16 +14,24 @@
     ],
     "main": "./out/extension.js",
     "contributes": {
+        "jsonValidation": [
+            {
+                "fileMatch": [
+                    "**regolith.json"
+                ],
+                "url": "./schemas/regolith-schema.json"
+            }
+        ],
         "commands": [
             {
                 "command": "regolith.init",
                 "title": "Regolith: Init"
             },
-			{
+            {
                 "command": "regolith.run",
                 "title": "Regolith: Run"
             },
-			{
+            {
                 "command": "regolith.install",
                 "title": "Regolith: install"
             }
