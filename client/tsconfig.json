@@ -23,6 +23,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", ".vscode-test", "*.test.ts"],
-  "include": ["./src"],
+  "include": ["src/**/*"],
   "references": []
 }
