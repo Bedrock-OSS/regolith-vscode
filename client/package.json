@@ -1,0 +1,28 @@
+{
+  "name": "regolith-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "scripts": {
+    "compile": "tsc -b ./tsconfig.json",
+    "pretest": "npm run compile",
+    "test": "mocha -r ts-node/register '**/*.test.ts'",
+    "update": "npm update && npm audit fix"
+  },
+  "engines": {
+    "vscode": "^1.69.2"
+  },
+  "dependencies": {
+    "node": "^18.9.0",
+    "vscode-languageclient": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.16",
+    "@types/vscode": "^1.71.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  }
+}
