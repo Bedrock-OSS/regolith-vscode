@@ -7,7 +7,7 @@ import { setupClient } from "./client/client";
 import { Manager } from "./manager/manager";
 
 export function activate(context: vscode.ExtensionContext): void {
-  activate(context);
+  // activate(context);
   setupClient(context);
 }
 
