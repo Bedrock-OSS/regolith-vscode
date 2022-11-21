@@ -14,6 +14,8 @@
     "workspace"
   ],
   "activationEvents": [
+    "onLanguage:json",
+    "onLanguage:jsonc",
     "onCommand:regolith.helloWorld"
   ],
   "scripts": {
