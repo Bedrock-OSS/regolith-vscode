@@ -62,7 +62,7 @@ export function setEvents() {
   // connection.languages.semanticTokens.on(onProvideSemanticRequestAsync);
   // connection.languages.semanticTokens.onRange(onProvideRangeSemanticRequestAsync);
 
-  if (Manager.capabiltities.hasWorkspaceFolderCapability) {
+  if (Manager.capabilities.hasWorkspaceFolderCapability) {
     // Workspace event
     connection.workspace.onDidCreateFiles(onDidCreateFilesAsync);
     connection.workspace.onDidDeleteFiles(onDidDeleteFilesAsync);

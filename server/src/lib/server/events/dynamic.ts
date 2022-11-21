@@ -7,7 +7,7 @@ import { Manager } from "../../manager/manager";
 export function setDynamicEvents() {
   const client = Manager.connection.client;
 
-  if (Manager.capabiltities.hasConfigurationCapability) {
+  if (Manager.capabilities.hasConfigurationCapability) {
     // Register for all configuration changes.
     client.register(DidChangeConfigurationNotification.type);
   }

@@ -12,7 +12,7 @@ export function onInitialize(params: InitializeParams): InitializeResult {
 
   //process capabilities of the client
   const capabilities = params.capabilities;
-  Manager.capabiltities.parse(capabilities);
+  Manager.capabilities.parse(capabilities);
 
   const result: InitializeResult = {
     capabilities: {

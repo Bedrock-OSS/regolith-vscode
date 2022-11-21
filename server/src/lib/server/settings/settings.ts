@@ -17,7 +17,7 @@ export namespace ServerSettings {
     return Object.assign({}, value);
   }
 
-  export function createDefaulSettings(): ServerSettings {
+  export function createDefaultSettings(): ServerSettings {
     return {};
   }
 }
