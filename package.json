@@ -1,84 +1,102 @@
 {
-    "name": "regolith",
-    "displayName": "Regolith",
-    "description": "VSCode addon for Regolith",
-    "version": "0.0.1",
-    "engines": {
-        "vscode": "^1.46.0"
-    },
-    "categories": [
-        "Other"
+  "name": "regolith",
+  "displayName": "Regolith",
+  "description": "VSCode addon for Regolith",
+  "version": "0.0.1",
+  "main": "./client/out/extension.js",
+  "engines": {
+    "vscode": "^1.69.2"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onCommand:regolith.helloWorld"
+  ],
+  "scripts": {
+    "compile:client": "tsc -b ./client/tsconfig.json",
+    "compile:server": "tsc -b ./server/tsconfig.json",
+    "compile": "npm run compile:client && npm run compile:server && tsc -b",
+    "lint:client": "eslint --config ./client/.eslintrc.json ./client/src/*.ts",
+    "lint:server": "eslint --config ./server/.eslintrc.json ./server/src/*.ts",
+    "lint": "npm run lint:client && npm run lint:server",
+    "pretest": "npm run compile && npm run lint",
+    "test": "cd client && npm run test && cd ../server && npm run test && cd ..",
+    "vscode:prepublish": "npm run compile && npm run webpack",
+    "watch": "tsc -watch -p ./",
+    "webpack:client": "webpack --mode production --config ./client/webpack.config.js",
+    "webpack:server": "webpack --mode production --config ./server/webpack.config.js",
+    "webpack": "npm run webpack:client && npm run webpack:server"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^12.11.7",
+    "@types/vscode": "^1.46.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "eslint": "^7.19.0",
+    "glob": "^7.1.6",
+    "json-loader": "^0.5.7",
+    "mocha": "^8.2.1",
+    "typescript": "^4.8.3",
+    "vscode-test": "^1.5.0"
+  },
+  "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "**regolith.json"
+        ],
+        "url": "./schemas/regolith-schema.json"
+      }
     ],
-    "activationEvents": [
-        "onCommand:regolith.helloWorld"
+    "commands": [
+      {
+        "command": "regolith.init",
+        "title": "Regolith: Init"
+      },
+      {
+        "command": "regolith.run",
+        "title": "Regolith: Run"
+      },
+      {
+        "command": "regolith.install",
+        "title": "Regolith: install"
+      }
     ],
-    "main": "./out/extension.js",
-    "contributes": {
-        "jsonValidation": [
-            {
-                "fileMatch": [
-                    "**regolith.json"
-                ],
-                "url": "./schemas/regolith-schema.json"
-            }
-        ],
-        "commands": [
-            {
-                "command": "regolith.init",
-                "title": "Regolith: Init"
-            },
-            {
-                "command": "regolith.run",
-                "title": "Regolith: Run"
-            },
-            {
-                "command": "regolith.install",
-                "title": "Regolith: install"
-            }
-        ],
-        "viewsWelcome": [
-            {
-                "view": "run-regolith",
-                "contents": "The current folder doesn't seem to contain a Regolith project.\n[Initialize Regolith](command:regolith.init)"
-            }
-        ],
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "regolith",
-                    "title": "Regolith",
-                    "icon": "assets/icons/regolith.svg"
-                }
-            ]
-        },
-        "views": {
-            "regolith": [
-                {
-                    "id": "run-regolith",
-                    "name": "Run Regolith"
-                }
-            ]
+    "viewsWelcome": [
+      {
+        "view": "run-regolith",
+        "contents": "The current folder doesn't seem to contain a Regolith project.\n[Initialize Regolith](command:regolith.init)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "regolith",
+          "title": "Regolith",
+          "icon": "assets/icons/regolith.svg"
         }
+      ]
     },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile && npm run lint",
-        "lint": "eslint src --ext ts",
-        "test": "node ./out/test/runTest.js"
-    },
-    "devDependencies": {
-        "@types/vscode": "^1.46.0",
-        "@types/glob": "^7.1.3",
-        "@types/mocha": "^8.0.4",
-        "@types/node": "^12.11.7",
-        "eslint": "^7.19.0",
-        "@typescript-eslint/eslint-plugin": "^4.14.1",
-        "@typescript-eslint/parser": "^4.14.1",
-        "glob": "^7.1.6",
-        "mocha": "^8.2.1",
-        "typescript": "^4.1.3",
-        "vscode-test": "^1.5.0"
+    "views": {
+      "regolith": [
+        {
+          "id": "run-regolith",
+          "name": "Run Regolith"
+        }
+      ]
     }
+  },
+  "dependencies": {
+    "ts-loader": "^9.3.1",
+    "ts-node": "^10.9.1",
+    "vsce": "^2.11.0",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  }
 }

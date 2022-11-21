@@ -1,0 +1,28 @@
+{
+  "name": "regolith-server",
+  "version": "1.0.0",
+  "description": "Regolith server",
+  "author": "Regolith",
+  "license": "ISC",
+  "scripts": {
+    "compile": "tsc -b ./tsconfig.json",
+    "postversion": "git add . && git commit -m \"auto: version update\""
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "@types/node": "^18.7.16",
+    "node": "^18.9.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3",
+    "vscode-languageserver": "^8.0.2",
+    "vscode-languageserver-textdocument": "^1.0.7",
+    "vscode-uri": "^3.0.3"
+  },
+  "devDependencies": {
+    "json-loader": "^0.5.7",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  }
+}

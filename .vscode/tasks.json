@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "npm watch 'vscode-plugin'",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$tsc-watch"]
+    },
+    {
+      "type": "npm",
+      "script": "compile",
+      "isBackground": false,
+      "group": "build",
+      "label": "npm compile 'vscode-plugin'",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "isBackground": false,
+      "group": "build",
+      "label": "npm test 'vscode-plugin'",
+      "problemMatcher": ["$tsc"]
+    }
+  ]
+}
