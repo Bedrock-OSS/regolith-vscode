@@ -28,7 +28,7 @@
     "pretest": "npm run compile && npm run lint",
     "test": "cd client && npm run test && cd ../server && npm run test && cd ..",
     "vscode:prepublish": "npm run compile && npm run webpack",
-    "watch": "tsc -watch -p ./",
+    "watch": "tsc -b -w",
     "webpack:client": "webpack --mode production --config ./client/webpack.config.js",
     "webpack:server": "webpack --mode production --config ./server/webpack.config.js",
     "webpack": "npm run webpack:client && npm run webpack:server"
