@@ -3,56 +3,106 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { Manager } from "../manager/manager";
 import TerminalWrapper from "./terminal";
+import * as cp from 'child_process';
+import {
+    DebugSession,
+    OutputEvent,
+    TerminatedEvent
+} from "@vscode/debugadapter";
 
 export function setupClient(context: vscode.ExtensionContext) {
-  console.log("starting minecraft language client");
+    console.log("starting minecraft language client");
 
-  // The server is implemented in node
-  const serverModule = context.asAbsolutePath(path.join("server", "out", "server.js"));
+    // The server is implemented in node
+    const serverModule = context.asAbsolutePath(path.join("server", "out", "server.js"));
 
-  // The debug options for the server
-  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-  const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+    // The debug options for the server
+    // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
+    const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
-  // If the extension is launched in debug mode then the debug server options are used
-  // Otherwise the run options are used
-  const serverOptions: ServerOptions = {
-    run: { module: serverModule, transport: TransportKind.ipc },
-    debug: {
-      module: serverModule,
-      transport: TransportKind.ipc,
-      options: debugOptions,
-    },
-  };
+    // If the extension is launched in debug mode then the debug server options are used
+    // Otherwise the run options are used
+    const serverOptions: ServerOptions = {
+        run: { module: serverModule, transport: TransportKind.ipc },
+        debug: {
+            module: serverModule,
+            transport: TransportKind.ipc,
+            options: debugOptions,
+        },
+    };
 
-  // Options to control the language client
-  const clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: [
-      { scheme: "file", language: "json" },
-      { scheme: "file", language: "jsonc" },
-    ],
-    synchronize: {
-      // Notify the server about file changes to '.clientrc files contained in the workspace
-      fileEvents: vscode.workspace.createFileSystemWatcher("**/.clientrc"),
-    },
-  };
+    // Options to control the language client
+    const clientOptions: LanguageClientOptions = {
+        // Register the server for plain text documents
+        documentSelector: [
+            { scheme: "file", language: "json" },
+            { scheme: "file", language: "jsonc" },
+        ],
+        synchronize: {
+            // Notify the server about file changes to '.clientrc files contained in the workspace
+            fileEvents: vscode.workspace.createFileSystemWatcher("**/.clientrc"),
+        },
+    };
 
-  // Create the language client and start the client.
-  Manager.client = new LanguageClient("languageRegolithServer", "LSP Regolith", serverOptions, clientOptions);
+    // Create the language client and start the client.
+    Manager.client = new LanguageClient("languageRegolithServer", "LSP Regolith", serverOptions, clientOptions);
 
-  // Start the client. This will also launch the server
-  Manager.client.start();
+    // Start the client. This will also launch the server
+    Manager.client.start();
 
-  vscode.commands.executeCommand("setContext", "ext:is_active", true);
-  vscode.commands.registerCommand("regolith.install", () => {
-    TerminalWrapper.runCommand("regolith", ["install-all"], (code: number) => {
-      if (code === 0) {
-        vscode.window.showInformationMessage("Regolith filters installed successfully");
-        // TODO: Refresh somehow diagnostics
-      } else {
-        vscode.window.showErrorMessage("Regolith failed to install filters");
-      }
+    vscode.commands.executeCommand("setContext", "ext:is_active", true);
+    vscode.commands.registerCommand("regolith.install", () => {
+        TerminalWrapper.runCommand("regolith", ["install-all"], (code: number) => {
+            if (code === 0) {
+                vscode.window.showInformationMessage("Regolith filters installed successfully");
+                // TODO: Refresh somehow diagnostics
+            } else {
+                vscode.window.showErrorMessage("Regolith failed to install filters");
+            }
+        });
     });
-  });
+    vscode.commands.registerCommand("regolith.run", (arg) => {
+        TerminalWrapper.runCommand("regolith", ["run", arg ?? 'default'], (code: number) => {
+            if (code === 0) {
+                vscode.window.showInformationMessage("Regolith filters installed successfully");
+                // TODO: Refresh somehow diagnostics
+            } else {
+                vscode.window.showErrorMessage("Regolith failed to install filters");
+            }
+        });
+    });
+    vscode.debug.registerDebugAdapterDescriptorFactory("regolith", {
+        createDebugAdapterDescriptor(session: vscode.DebugSession, executable: vscode.DebugAdapterExecutable | undefined): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+            return new Promise((resolve, reject) => {
+                let child: cp.ChildProcess;
+                let opts: any = {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    env: {...process.env, FORCE_COLOR: '1'},
+                };
+                if (session.workspaceFolder) {
+                    opts['cwd'] = session.workspaceFolder.uri.fsPath;
+                }
+                let dbgArgs = ['run', session.configuration.profile || 'default'];
+                child = cp.spawn('regolith', dbgArgs, opts);
+                if (!child) {
+                    reject(new Error("Could not start regolith"));
+                } else {
+                    const session = new DebugSession();
+                    resolve(new vscode.DebugAdapterInlineImplementation(session));
+                    child.stderr!.on('data', (buffer: Buffer) => {
+                        let text = buffer.toString();
+                        session.sendEvent(new OutputEvent(text, 'stderr'));
+                    });
+                    child.stdout!.on('data', (buffer: Buffer) => {
+                        let text = buffer.toString();
+                        session.sendEvent(new OutputEvent(text, 'stdout'));
+                    });
+                    child.on('exit', (code) => {
+                        session.sendEvent(new OutputEvent(`Regolith exited with code ${code}`, 'console'));
+                        session.sendEvent(new TerminatedEvent());
+                    });
+                }
+            });
+        }
+    });
 }

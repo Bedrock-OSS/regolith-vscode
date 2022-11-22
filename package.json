@@ -14,6 +14,7 @@
     "workspace"
   ],
   "activationEvents": [
+    "onDebug",
     "onLanguage:json",
     "onLanguage:jsonc",
     "onCommand:regolith.helloWorld"
@@ -92,7 +93,40 @@
           "name": "Run Regolith"
         }
       ]
-    }
+    },
+    "debuggers": [
+      {
+        "type": "regolith",
+        "label": "Regolith",
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "profile": {
+                "type": "string",
+                "description": "Regolith profile to run",
+                "default": "default"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "regolith",
+            "request": "launch",
+            "name": "Run default Regolith profile",
+            "profile": "default"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "type": "regolith",
+            "request": "launch",
+            "name": "${2:Run Regolith}",
+            "profile": "${1:default}"
+          }
+        ]
+      }
+    ]
   },
   "dependencies": {
     "ts-loader": "^9.3.1",

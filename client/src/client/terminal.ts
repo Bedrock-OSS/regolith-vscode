@@ -49,7 +49,7 @@ export default class TerminalWrapper {
 				}
 			};
 
-			//TODO: Might break if multiple commands are run at the same time.
+			// This will abandon the old terminal if it's still running
 			if (this._terminal && this._finished) {
 				this._terminal.dispose();
 				this._terminal = null;
@@ -62,7 +62,7 @@ export default class TerminalWrapper {
 			});
 			this._terminal.show();
 		} catch (error) {
-			void vscode.window.showErrorMessage(`Error running external command: ${(error as any).message}`);
+			void vscode.window.showErrorMessage(`Error running command: ${(error as any).message}`);
 		}
 	}
 
