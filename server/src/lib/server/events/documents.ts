@@ -1,17 +1,19 @@
 import { TextDocumentChangeEvent } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Diagnostic } from '../../diagnostics/Diagnostics';
-import { RegolithConfigDocument } from '../../regolithConfig';
-
+import diagnoseRegolithConfig from '../../diagnostics/ConfigDiagnostics';
+import { Diagnostic } from "../../diagnostics/Diagnostics";
+import DiagnosticsBuilder from "../../diagnostics/DiagnosticsBuilder";
+import { RegolithConfigDocument } from "../../regolithConfig";
 
 export async function onDocumentChangedAsync(event: TextDocumentChangeEvent<TextDocument>): Promise<void> {
-  console.log("document changed");
-  // Parse the document both to object and to AST
-  let doc = new RegolithConfigDocument(event.document);
-  if (doc.isRegolithDocument()) {
-    doc.process();
-  } else {
-    Diagnostic.resetDocument(event.document);
-  }
-  return;
+    console.log("document changed");
+    let doc = new RegolithConfigDocument(event.document);
+    if (doc.isRegolithDocument()) {
+        let diagnosticsBuilder = new DiagnosticsBuilder(event.document);
+        diagnoseRegolithConfig(doc, diagnosticsBuilder);
+        diagnosticsBuilder.finish();
+    } else {
+        Diagnostic.resetDocument(event.document);
+    }
+    return;
 }
