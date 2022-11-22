@@ -10,15 +10,16 @@ export default class TerminalWrapper {
 
 	public static runCommand(cmd: string, args: string[], onFinish: (status: integer) => void): void {
 		try {
-			//TODO: This works, but doesn't show ANSI colors. Need to figure out how to get that working.
 			const writeEmitter = new vscode.EventEmitter<string>();
 			let p: cp.ChildProcess;
 			const pty: vscode.Pseudoterminal = {
 				onDidWrite: writeEmitter.event,
 				open: () => {
 					const decoder = new util.TextDecoder('utf-8');
+					chalk.level = 2;
 					writeEmitter.fire(chalk.bgWhite.black.bold(`Executing ${cmd} ${args.join(' ')}\r\n`));
-					p = cp.spawn(cmd, args, vscode.workspace.workspaceFolders ? { cwd: vscode.workspace.workspaceFolders[0].uri.fsPath } : undefined);
+					// eslint-disable-next-line @typescript-eslint/naming-convention
+					p = cp.spawn(cmd, args, { cwd: vscode.workspace.workspaceFolders![0].uri.fsPath, shell: vscode.env.shell, env: {...process.env, FORCE_COLOR: '1'} });
 					if (p && p.stderr && p.stdout) {
 						p.stderr.on('data', (data: Buffer) => {
 							writeEmitter.fire(decoder.decode(data).replace(/(\r)?\n/g, "\r\n"));
@@ -28,10 +29,10 @@ export default class TerminalWrapper {
 						});
 						p.on('exit', (code: number, signal: string) => {
 							if (signal === 'SIGTERM') {
-								writeEmitter.fire('\r\nSuccessfully killed process\r\n');
+								writeEmitter.fire(chalk.bgWhite.black.bold(`\r\nSuccessfully killed process\r\n`));
 								writeEmitter.fire('\r\n');
 							} else {
-								writeEmitter.fire(`\r\nProcess ended with exit code ${code}\r\n`);
+								writeEmitter.fire(chalk.bgWhite.black.bold(`\r\nProcess ended with exit code ${code}\r\n`));
 								writeEmitter.fire('\r\n');
 							}
 							this._finished = true;
