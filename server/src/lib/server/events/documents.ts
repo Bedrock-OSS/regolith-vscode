@@ -9,8 +9,7 @@ export async function onDocumentChangedAsync(event: TextDocumentChangeEvent<Text
   // Parse the document both to object and to AST
   let doc = new RegolithConfigDocument(event.document);
   if (doc.isRegolithDocument()) {
-    let diagnostics = doc.diagnose();
-    Diagnostic.sendDiagnostics(event.document, diagnostics);
+    doc.process();
   } else {
     Diagnostic.resetDocument(event.document);
   }

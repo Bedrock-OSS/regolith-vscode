@@ -1,99 +1,19 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as JSONC from "jsonc-parser";
 import { Diagnostic as VSDiagnostics } from "vscode-languageserver/node";
-import { Manager } from './manager/manager';
+import DiagnosticsBuilder from './diagnostics/DiagnosticsBuilder';
 
-
-/**
- * Converts an offset to a position containing line and character
- * @param text The text to parse
- * @param offset The offset to parse
- * @returns The position of the offset
- */
-function offsetToPosition(text: string, offset: number): { line: number, character: number } {
-    let line = 0;
-    let character = 0;
-    for (let i = 0; i < offset; i++) {
-        if (text[i] === '\n') {
-            line++;
-            character = 0;
-        } else {
-            character++;
-        }
-    }
-    return { line, character };
-}
-
-/**
- * Converts a JSONC path to a range containing the value of the path
- * @param path The path to the node
- * @param tree The tree to parse
- * @param text The text to parse
- * @returns The range of the node
- */
-function valueRange(path: JSONC.JSONPath, tree:JSONC.Node|undefined, text: string): { start: { line: number, character: number }, end: { line: number, character: number } } {
-	if (tree) {
-		let node = JSONC.findNodeAtLocation(tree, path);
-		if (node) {
-			return {
-				start: offsetToPosition(text, node.offset),
-				end: offsetToPosition(text, node.offset + node.length)
-			};
-		}
-	}
-	return {
-		start: { line: 0, character: 0 },
-		end: { line: 0, character: 0 }
-	};
-}
-
-/**
- * Converts a JSONC path to a range containing the name of the path (the key inside the object)
- * @param path The path to the node
- * @param tree The tree to parse
- * @param text The text to parse
- * @returns The range of the node
- */
-function nameRange(path: JSONC.JSONPath, tree:JSONC.Node|undefined, text: string): { start: { line: number, character: number }, end: { line: number, character: number } } {
-	if (tree) {
-		let node = JSONC.findNodeAtLocation(tree, path);
-		if (node) {
-			node = node.parent?.children![0];
-			if (node) {
-				return {
-					start: offsetToPosition(text, node.offset),
-					end: offsetToPosition(text, node.offset + node.length)
-				};
-			}
-		}
-	}
-	return {
-		start: { line: 0, character: 0 },
-		end: { line: 0, character: 0 }
-	};
-}
-
-function createError(message: string, range: { start: { line: number, character: number }, end: { line: number, character: number } }): VSDiagnostics {
-	return {
-		severity: 1,
-		range: range,
-		message: message,
-		source: "Regolith"
-	};
-}
 
 export class RegolithConfigDocument {
 
 	public doc: TextDocument;
-
 	private object: any;
-
-	private tree: JSONC.Node|undefined;
+	private diagnosticsBuilder: DiagnosticsBuilder;
 
 	constructor(doc: TextDocument) {
 		this.doc = doc;
 		this.object = JSONC.parse(doc.getText());
-		this.tree = JSONC.parseTree(doc.getText());
+		this.diagnosticsBuilder = new DiagnosticsBuilder(this.doc);
 	}
 
 	public getRegolithProperty(): any {
@@ -120,24 +40,27 @@ export class RegolithConfigDocument {
 		return this.object.regolith.filterDefinitions;
 	}
 
-	public diagnose(): VSDiagnostics[] {
-		const diagnostics: VSDiagnostics[] = [];
+	public process() {
 		if (this.isRegolithDocument()) {
-			this.checkPaths(diagnostics);
-			this.checkFilterDefinitions(diagnostics);
-			this.checkProfiles(diagnostics);
+			this.diagnose();
 		}
-		return diagnostics;
 	}
 
-	private checkFilterDefinitions(diagnostics: VSDiagnostics[]) {
+	public diagnose() {
+		this.checkPaths();
+		this.checkFilterDefinitions();
+		this.checkProfiles();
+		this.diagnosticsBuilder.finish();
+	}
+
+	private checkFilterDefinitions() {
 		if (this.hasDefinitions()) {
 			const filterDefinitions = this.getFilterDefinitions();
 			for (const filterDefinitionName in filterDefinitions) {
 				const filterDefinition = filterDefinitions[filterDefinitionName];
 				if (filterDefinition.url) {
 					if (!filterDefinition.version) {
-						diagnostics.push(createError("The 'version' property is missing", nameRange(["regolith", "filterDefinitions", filterDefinitionName], this.tree, this.doc.getText())));
+						this.diagnosticsBuilder.addDiagnosticForKey(["regolith", "filterDefinitions", filterDefinitionName], "The 'version' property is missing");
 					} else {
 						//TODO: Check if filter is installed. If not, provide code action to install it or install all filters
 					}
@@ -146,47 +69,44 @@ export class RegolithConfigDocument {
 		}
 	}
 
-	private checkPaths(diagnostics: VSDiagnostics[]) {
+	private checkPaths() {
 		if (this.object.packs) {
 			if (this.object.packs.behaviorPack) {
 				let path = this.object.packs.behaviorPack;
 				if (typeof path !== "string") {
-					diagnostics.push(createError("Behavior pack path must be a string", valueRange(["packs", "behaviorPack"], this.tree, this.doc.getText())));
+					this.diagnosticsBuilder.addDiagnosticForValue(["packs", "behaviorPack"], "Behavior pack path must be a string");
 				} else {
 					//TODO: Check if path is valid
 				}
 			} else {
-				diagnostics.push(createError("The 'behaviorPack' property is missing", nameRange(["packs"], this.tree, this.doc.getText())));
+				this.diagnosticsBuilder.addDiagnosticForKey(["packs"], "The 'behaviorPack' property is missing");
 			}
 			if (this.object.packs.resourcePack) {
 				let path = this.object.packs.resourcePack;
 				if (typeof path !== "string") {
-					diagnostics.push(createError("Resource pack path must be a string", valueRange(["packs", "resourcePack"], this.tree, this.doc.getText())));
+					this.diagnosticsBuilder.addDiagnosticForValue(["packs", "resourcePack"], "Resource pack path must be a string");
 				} else {
 					//TODO: Check if path is valid
 				}
 			} else {
-				diagnostics.push(createError("The 'resourcePack' property is missing", nameRange(["packs"], this.tree, this.doc.getText())));
+				this.diagnosticsBuilder.addDiagnosticForKey(["packs"], "The 'resourcePack' property is missing");
 			}
 		} else {
-			diagnostics.push(createError("The 'packs' property is missing", {
-				start: { line: 0, character: 0 },
-				end: offsetToPosition(this.doc.getText(), this.doc.getText().length)
-			}));
+			this.diagnosticsBuilder.addDiagnosticForDocument("The 'packs' property is missing");
 		}
 		if (this.object.regolith.dataPath) {
 			let path = this.object.regolith.dataPath;
 			if (typeof path !== "string") {
-				diagnostics.push(createError("Data path must be a string", valueRange(["regolith", "dataPath"], this.tree, this.doc.getText())));
+				this.diagnosticsBuilder.addDiagnosticForValue(["regolith", "dataPath"], "Data path must be a string");
 			} else {
 				//TODO: Check if path is valid
 			}
 		} else {
-			diagnostics.push(createError("The 'dataPath' property is missing", nameRange(["regolith"], this.tree, this.doc.getText())));
+			this.diagnosticsBuilder.addDiagnosticForKey(["regolith"], "The 'dataPath' property is missing");
 		}
 	}
 
-	private checkProfiles(diagnostics: VSDiagnostics[]) {
+	private checkProfiles() {
 		const profiles = this.getProfiles();
 		if (profiles) {
 			for (const profileName in profiles) {
@@ -197,19 +117,19 @@ export class RegolithConfigDocument {
 							if (Object.prototype.hasOwnProperty.call(profile.filters, filterIndex)) {
 								const filter = profile.filters[filterIndex];
 								if (filter.filter && (!this.hasDefinitions() || !this.getFilterDefinitions()[filter.filter])) {
-									diagnostics.push(createError("Filter " + filter.filter + " not found", valueRange(["regolith", "profiles", profileName, "filters", +filterIndex, "filter"], this.tree, this.doc.getText())));
+									this.diagnosticsBuilder.addDiagnosticForValue(["regolith", "profiles", profileName, "filters", +filterIndex, "filter"], "Filter " + filter.filter + " not found");
 								} else if (filter.profile && !profiles[filter.profile]) {
-									diagnostics.push(createError("Profile " + filter.profile + " not found", valueRange(["regolith", "profiles", profileName, "filters", +filterIndex, "profile"], this.tree, this.doc.getText())));
+									this.diagnosticsBuilder.addDiagnosticForValue(["regolith", "profiles", profileName, "filters", +filterIndex, "profile"], "Profile " + filter.profile + " not found");
 								}
 							}
 						}
 					} else {
-						diagnostics.push(createError("Profile " + profileName + " has no filters", nameRange(["regolith", "profiles", profileName], this.tree, this.doc.getText())));
+						this.diagnosticsBuilder.addDiagnosticForKey(["regolith", "profiles", profileName], "Profile " + profileName + " has no filters");
 					}
 				}
 			}
 		} else {
-			diagnostics.push(createError("No profiles found", nameRange(["regolith"], this.tree, this.doc.getText())));
+			this.diagnosticsBuilder.addDiagnosticForKey(["regolith"], "No profiles found");
 		}
 	}
 
