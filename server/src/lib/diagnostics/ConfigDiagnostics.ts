@@ -1,5 +1,7 @@
 import { RegolithConfigDocument } from '../regolithConfig';
 import DiagnosticsBuilder from './DiagnosticsBuilder';
+import fs from 'fs';
+import { CodeActionKind, DiagnosticSeverity } from 'vscode-languageserver';
 
 export default function diagnoseRegolithConfig(doc: RegolithConfigDocument, diagnosticsBuilder: DiagnosticsBuilder) {
 	if (doc.isRegolithDocument()) {
@@ -16,7 +18,9 @@ function checkPaths(doc: RegolithConfigDocument, diagnosticsBuilder: Diagnostics
 			if (typeof path !== "string") {
 				diagnosticsBuilder.addDiagnosticForValue(["packs", "behaviorPack"], "Behavior pack path must be a string");
 			} else {
-				//TODO: Check if path is valid
+				if (!fs.existsSync(doc.resolvePath(path))) {
+					diagnosticsBuilder.addDiagnosticForValue(["packs", "behaviorPack"], "Behavior pack path does not exist");
+				}
 			}
 		} else {
 			diagnosticsBuilder.addDiagnosticForKey(["packs"], "The 'behaviorPack' property is missing");
@@ -26,7 +30,9 @@ function checkPaths(doc: RegolithConfigDocument, diagnosticsBuilder: Diagnostics
 			if (typeof path !== "string") {
 				diagnosticsBuilder.addDiagnosticForValue(["packs", "resourcePack"], "Resource pack path must be a string");
 			} else {
-				//TODO: Check if path is valid
+				if (!fs.existsSync(doc.resolvePath(path))) {
+					diagnosticsBuilder.addDiagnosticForValue(["packs", "resourcePack"], "Resource pack path does not exist");
+				}
 			}
 		} else {
 			diagnosticsBuilder.addDiagnosticForKey(["packs"], "The 'resourcePack' property is missing");
@@ -39,7 +45,9 @@ function checkPaths(doc: RegolithConfigDocument, diagnosticsBuilder: Diagnostics
 		if (typeof path !== "string") {
 			diagnosticsBuilder.addDiagnosticForValue(["regolith", "dataPath"], "Data path must be a string");
 		} else {
-			//TODO: Check if path is valid
+			if (!fs.existsSync(doc.resolvePath(path))) {
+				diagnosticsBuilder.addDiagnosticForValue(["packs", "dataPath"], "Data path does not exist");
+			}
 		}
 	} else {
 		diagnosticsBuilder.addDiagnosticForKey(["regolith"], "The 'dataPath' property is missing");
@@ -53,12 +61,29 @@ function checkFilterDefinitions(doc: RegolithConfigDocument, diagnosticsBuilder:
 		for (const filterDefinitionName in filterDefinitions) {
 			const filterDefinition = filterDefinitions[filterDefinitionName];
 			if (filterDefinition.url) {
-				if (!filterDefinition.version) {
-					diagnosticsBuilder.addDiagnosticForKey(["regolith", "filterDefinitions", filterDefinitionName], "The 'version' property is missing");
-				} else {
-					//TODO: Check if filter is installed. If not, provide code action to install it or install all filters
-				}
+				checkRemoteFilterDefinition(filterDefinitionName, doc, diagnosticsBuilder);
 			}
+		}
+	}
+}
+
+function checkRemoteFilterDefinition(filterDefinitionName: string, doc:RegolithConfigDocument, diagnosticsBuilder: DiagnosticsBuilder) {
+	const filterDefinition = doc.getFilterDefinitions()[filterDefinitionName];
+	if (!filterDefinition.version) {
+		diagnosticsBuilder.addDiagnosticForKey(["regolith", "filterDefinitions", filterDefinitionName], "The 'version' property is missing");
+	} else {
+		if (!fs.existsSync(doc.resolvePath(".regolith/cache/filters/" + filterDefinitionName + "/filter.json"))) {
+			diagnosticsBuilder.addDiagnosticForKey(["regolith", "filterDefinitions", filterDefinitionName], "Filter " + filterDefinitionName + " not installed", DiagnosticSeverity.Warning,[
+				{
+					title: "Install all filters",
+					kind: CodeActionKind.QuickFix,
+					isPreferred: true,
+					command: {
+						title: "Install all filter",
+						command: "regolith.install"
+					}
+				}
+			]);
 		}
 	}
 }

@@ -2,6 +2,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import * as path from "path";
 import * as vscode from "vscode";
 import { Manager } from "../manager/manager";
+import TerminalWrapper from "./terminal";
 
 export function setupClient(context: vscode.ExtensionContext) {
   console.log("starting minecraft language client");
@@ -44,4 +45,14 @@ export function setupClient(context: vscode.ExtensionContext) {
   Manager.client.start();
 
   vscode.commands.executeCommand("setContext", "ext:is_active", true);
+  vscode.commands.registerCommand("regolith.install", () => {
+    TerminalWrapper.runCommand("regolith", ["install-all"], (code: number) => {
+      if (code === 0) {
+        vscode.window.showInformationMessage("Regolith filters installed successfully");
+        // TODO: Refresh somehow diagnostics
+      } else {
+        vscode.window.showErrorMessage("Regolith failed to install filters");
+      }
+    });
+  });
 }

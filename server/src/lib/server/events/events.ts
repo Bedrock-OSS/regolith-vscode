@@ -1,3 +1,4 @@
+import { onCodeActionAsync, onCodeActionResolveAsync } from '../../actions/Actions';
 import { Manager } from "../../manager/manager";
 import { onDocumentChangedAsync } from "./documents";
 import { onDidCreateFilesAsync } from "./workspace/create";
@@ -19,8 +20,8 @@ export function setEvents() {
   // connection.onExecuteCommand(onCommandRequestAsync);
 
   // This handler provides code actions
-  // connection.onCodeAction(onCodeActionAsync);
-  // connection.onCodeActionResolve(onCodeActionResolveAsync);
+  connection.onCodeAction(onCodeActionAsync);
+  connection.onCodeActionResolve(onCodeActionResolveAsync);
 
   // This handler provides code lens
   // connection.onCodeLens(onCodeLensRequestAsync);

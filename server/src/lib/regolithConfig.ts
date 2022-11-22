@@ -1,5 +1,6 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as JSONC from "jsonc-parser";
+import path from 'path';
 
 
 export class RegolithConfigDocument {
@@ -34,6 +35,14 @@ export class RegolithConfigDocument {
 
 	public getFilterDefinitions(): any {
 		return this.object.regolith.filterDefinitions;
+	}
+
+	public getFilePath(): string {
+		return path.normalize(decodeURIComponent(this.doc.uri.replace("file:///", "")));
+	}
+
+	public resolvePath(to: string): string {
+		return path.resolve(path.dirname(this.getFilePath()), to);
 	}
 
 }

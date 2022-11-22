@@ -30,6 +30,7 @@ export function onInitialize(params: InitializeParams): InitializeResult {
           didRename: { filters: [{ scheme: "file", pattern: { glob: "**​/*.{mcfunction,json}" } }] },
         },
       },
+      codeActionProvider: true,
     },
     serverInfo: {
       name: "regolith-language-server",

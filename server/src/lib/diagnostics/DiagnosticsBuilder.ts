@@ -1,10 +1,11 @@
 import { Manager } from "../manager/manager";
-import { Diagnostic as VSDiagnostics, DiagnosticSeverity } from "vscode-languageserver/node";
+import { Diagnostic as VSDiagnostics, DiagnosticSeverity, CodeLens as VSCodeLens, CodeAction } from "vscode-languageserver/node";
 import { Range, TextDocument } from 'vscode-languageserver-textdocument';
 import * as JSONC from "jsonc-parser";
 
 export default class DiagnosticsBuilder {
 	private diagnostics: VSDiagnostics[] = [];
+	private codeLenses: VSCodeLens[] = [];
 	private doc: TextDocument;
 	private tree: JSONC.Node | undefined;
 
@@ -13,30 +14,31 @@ export default class DiagnosticsBuilder {
 		this.tree = JSONC.parseTree(doc.getText());
 	}
 
-	public addDiagnosticForValue(path: JSONC.JSONPath, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error): void {
+	public addDiagnosticForValue(path: JSONC.JSONPath, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error, quickFixes: CodeAction[] = []): void {
 		const range = this.getValueRange(path);
-		this.addDiagnostic(range, message, severity);
+		this.addDiagnostic(range, message, severity, quickFixes);
 	}
 
-	public addDiagnosticForKey(path: JSONC.JSONPath, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error): void {
+	public addDiagnosticForKey(path: JSONC.JSONPath, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error, quickFixes: CodeAction[] = []): void {
 		const range = this.getKeyRange(path);
-		this.addDiagnostic(range, message, severity);
+		this.addDiagnostic(range, message, severity, quickFixes);
 	}
 
-	public addDiagnosticForDocument(message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error): void {
+	public addDiagnosticForDocument(message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error, quickFixes: CodeAction[] = []): void {
 		const range = {
 			start: { line: 0, character: 0 },
 			end: this.doc.positionAt(this.doc.getText().length)
 		};
-		this.addDiagnostic(range, message, severity);
+		this.addDiagnostic(range, message, severity, quickFixes);
 	}
 
-	public addDiagnostic(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error): void {
+	public addDiagnostic(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error, quickFixes: CodeAction[] = []): void {
 		this.diagnostics.push({
 			severity: severity,
 			range: range,
 			message: message,
-			source: "Regolith"
+			source: "Regolith",
+			data: quickFixes
 		});
 	}
 
