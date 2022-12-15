@@ -9,6 +9,7 @@ import {
     OutputEvent,
     TerminatedEvent
 } from "@vscode/debugadapter";
+import fs from "fs";
 
 export function setupClient(context: vscode.ExtensionContext) {
     console.log("starting minecraft language client");
@@ -68,6 +69,22 @@ export function setupClient(context: vscode.ExtensionContext) {
                 // TODO: Refresh somehow diagnostics
             } else {
                 vscode.window.showErrorMessage("Regolith failed to install filters");
+            }
+        });
+    });
+    vscode.commands.registerCommand("regolith.install_single", () => {
+        vscode.window.showInputBox({
+            prompt: "Enter the name of the filter you want to install",
+            placeHolder: "filter name",
+        }).then((filterName) => {
+            if (filterName) {
+                TerminalWrapper.runCommand("regolith", ["install", filterName], (code: number) => {
+                    if (code === 0) {
+                        vscode.window.showInformationMessage("Regolith filter " + filterName + " installed successfully");
+                    } else {
+                        vscode.window.showErrorMessage("Regolith failed to install filter " + filterName);
+                    }
+                });
             }
         });
     });
