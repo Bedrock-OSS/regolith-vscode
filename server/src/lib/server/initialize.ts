@@ -31,6 +31,10 @@ export function onInitialize(params: InitializeParams): InitializeResult {
         },
       },
       codeActionProvider: true,
+      completionProvider: {
+        resolveProvider: true,
+        triggerCharacters: ["\""],
+      },
     },
     serverInfo: {
       name: "regolith-language-server",

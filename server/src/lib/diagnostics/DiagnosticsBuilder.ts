@@ -2,6 +2,7 @@ import { Manager } from "../manager/manager";
 import { Diagnostic as VSDiagnostics, DiagnosticSeverity, CodeLens as VSCodeLens, CodeAction } from "vscode-languageserver/node";
 import { Range, TextDocument } from 'vscode-languageserver-textdocument';
 import * as JSONC from "jsonc-parser";
+import { RegolithConfigDocument } from '../regolithConfig';
 
 export default class DiagnosticsBuilder {
 	private diagnostics: VSDiagnostics[] = [];
@@ -9,9 +10,9 @@ export default class DiagnosticsBuilder {
 	private doc: TextDocument;
 	private tree: JSONC.Node | undefined;
 
-	constructor(doc: TextDocument) {
-		this.doc = doc;
-		this.tree = JSONC.parseTree(doc.getText());
+	constructor(doc: RegolithConfigDocument) {
+		this.doc = doc.doc;
+		this.tree = doc.tree;
 	}
 
 	public addDiagnosticForValue(path: JSONC.JSONPath, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error, quickFixes: CodeAction[] = []): void {

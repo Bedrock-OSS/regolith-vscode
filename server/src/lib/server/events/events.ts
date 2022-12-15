@@ -1,4 +1,5 @@
 import { onCodeActionAsync, onCodeActionResolveAsync } from '../../actions/Actions';
+import { onCompletionRequestAsync, onCompletionResolveRequestAsync } from '../../completions/Completions';
 import { Manager } from "../../manager/manager";
 import { onDocumentChangedAsync } from "./documents";
 import { onDidCreateFilesAsync } from "./workspace/create";
@@ -28,8 +29,8 @@ export function setEvents() {
   // connection.onCodeLensResolve(onCodeLensResolveRequestAsync);
 
   // This handler provides completion items.
-  // connection.onCompletion(onCompletionRequestAsync);
-  //connection.onCompletionResolve(onCompletionResolveRequestAsync);
+  connection.onCompletion(onCompletionRequestAsync);
+  connection.onCompletionResolve(onCompletionResolveRequestAsync);
   // connection.onImplementation(onImplementationRequestAsync);
 
   // This handler provides go to definitions

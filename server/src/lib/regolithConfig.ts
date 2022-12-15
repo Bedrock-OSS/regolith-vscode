@@ -7,10 +7,12 @@ export class RegolithConfigDocument {
 
 	public doc: TextDocument;
 	public object: any;
+	public tree: JSONC.Node | undefined;
 
 	constructor(doc: TextDocument) {
 		this.doc = doc;
 		this.object = JSONC.parse(doc.getText());
+		this.tree = JSONC.parseTree(doc.getText());
 	}
 
 	public getRegolithProperty(): any {
