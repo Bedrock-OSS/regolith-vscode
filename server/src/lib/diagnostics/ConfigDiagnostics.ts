@@ -84,6 +84,21 @@ function checkRemoteFilterDefinition(filterDefinitionName: string, doc:RegolithC
 					}
 				}
 			]);
+		} else {
+			const filter = JSON.parse(fs.readFileSync(doc.resolvePath(".regolith/cache/filters/" + filterDefinitionName + "/filter.json"), "utf8"));
+			if (filter.version !== filterDefinition.version) {
+				diagnosticsBuilder.addDiagnosticForValue(["regolith", "filterDefinitions", filterDefinitionName, "version"], "Filter " + filterDefinitionName + " is outdated", DiagnosticSeverity.Warning,[
+					{
+						title: "Install all filters",
+						kind: CodeActionKind.QuickFix,
+						isPreferred: true,
+						command: {
+							title: "Install all filters",
+							command: "regolith.install"
+						}
+					}
+				]);
+			}
 		}
 	}
 }
