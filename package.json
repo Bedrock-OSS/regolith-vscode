@@ -17,7 +17,7 @@
     "onDebug",
     "onLanguage:json",
     "onLanguage:jsonc",
-    "onCommand:regolith.helloWorld"
+    "onFileSystem:regolithScheme"
   ],
   "scripts": {
     "compile:client": "tsc -b ./client/tsconfig.json",
@@ -52,9 +52,9 @@
     "jsonValidation": [
       {
         "fileMatch": [
-          "**regolith.json"
+          "**/config.json"
         ],
-        "url": "./schemas/regolith-schema.json"
+        "url": "regolith://config.json"
       }
     ],
     "commands": [
@@ -75,29 +75,6 @@
         "title": "Regolith: install filter"
       }
     ],
-    "viewsWelcome": [
-      {
-        "view": "run-regolith",
-        "contents": "The current folder doesn't seem to contain a Regolith project.\n[Initialize Regolith](command:regolith.init)"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "regolith",
-          "title": "Regolith",
-          "icon": "assets/icons/regolith.svg"
-        }
-      ]
-    },
-    "views": {
-      "regolith": [
-        {
-          "id": "run-regolith",
-          "name": "Run Regolith"
-        }
-      ]
-    },
     "debuggers": [
       {
         "type": "regolith",

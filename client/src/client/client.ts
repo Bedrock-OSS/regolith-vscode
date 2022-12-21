@@ -52,6 +52,17 @@ export function setupClient(context: vscode.ExtensionContext) {
     Manager.client.start();
 
     vscode.commands.executeCommand("setContext", "ext:is_active", true);
+
+    // Register commands
+    vscode.commands.registerCommand("regolith.init", () => {
+        TerminalWrapper.runCommand("regolith", ["init"], (code: number) => {
+            if (code === 0) {
+                vscode.window.showInformationMessage("Regolith initialized successfully");
+            } else {
+                vscode.window.showErrorMessage("Regolith failed to initialize");
+            }
+        });
+    });
     vscode.commands.registerCommand("regolith.install", () => {
         TerminalWrapper.runCommand("regolith", ["install-all"], (code: number) => {
             if (code === 0) {
@@ -122,4 +133,52 @@ export function setupClient(context: vscode.ExtensionContext) {
             });
         }
     });
+    vscode.workspace.registerTextDocumentContentProvider("regolith", {
+        provideTextDocumentContent(uri: vscode.Uri): string {
+            if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+                return prepareSchema(context.asAbsolutePath('schemas/regolith-schema.json'), null);
+            }
+            const content = prepareSchema(context.asAbsolutePath('schemas/regolith-schema.json'), vscode.workspace.workspaceFolders[0].uri.fsPath);
+            return content;
+        }
+    });
+}
+
+function prepareSchema(schemaPath: string, workspaceFolder:string|null): string {
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+    if (!workspaceFolder) {
+        return schema;
+    }
+    const schemaObj = JSON.parse(schema);
+    if (fs.existsSync(path.join(workspaceFolder, 'config.json'))) {
+        console.log('config.json exists');
+        const config = JSON.parse(fs.readFileSync(path.join(workspaceFolder, 'config.json'), 'utf8'));
+        if (config && config.regolith && config.regolith.filterDefinitions) {
+            console.log('config.json has regolith section and filter definitions');
+            const filters = Object.keys(config.regolith.filterDefinitions);
+            for (const filter of filters) {
+                if (config.regolith.filterDefinitions[filter].url && fs.existsSync(path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/schema.json'))) {
+                    const filterSchema = JSON.parse(fs.readFileSync(path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/schema.json'), 'utf8'));
+                    if (filterSchema) {
+                        delete filterSchema.$schema;
+                        delete filterSchema.$id;
+                        const option = {
+                            properties: {
+                                filter: {
+                                    const: filter
+                                },
+                                settings: filterSchema
+                            }
+                        };
+                        schemaObj.definitions.profileFilter.anyOf.splice(0, 0, option);
+                    }
+                }
+            }
+        } else {
+            console.log('config.json does not have regolith section or filter definitions');
+        }
+    } else {
+        console.log('config.json does not exist');
+    }
+    return JSON.stringify(schemaObj, null, 2);
 }
