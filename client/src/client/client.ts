@@ -133,12 +133,32 @@ export function setupClient(context: vscode.ExtensionContext) {
             });
         }
     });
+    const schemasDidChange = new vscode.EventEmitter<vscode.Uri>();
+    let configWatcher: vscode.FileSystemWatcher | undefined;
+    let filterCacheWatcher: vscode.FileSystemWatcher | undefined;
     vscode.workspace.registerTextDocumentContentProvider("regolith", {
+        onDidChange: schemasDidChange.event,
         provideTextDocumentContent(uri: vscode.Uri): string {
             if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
                 return prepareSchema(context.asAbsolutePath('schemas/regolith-schema.json'), null);
             }
             const content = prepareSchema(context.asAbsolutePath('schemas/regolith-schema.json'), vscode.workspace.workspaceFolders[0].uri.fsPath);
+            configWatcher?.dispose();
+            configWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], 'config.json'), false, false, false);
+            configWatcher.onDidChange(() => {
+                schemasDidChange.fire(uri);
+            });
+            filterCacheWatcher?.dispose();
+            filterCacheWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], '.regolith/cache/filters/*/schema.json'), false, false, false);
+            filterCacheWatcher.onDidChange((e) => {
+                schemasDidChange.fire(uri);
+            });
+            filterCacheWatcher.onDidCreate((e) => {
+                schemasDidChange.fire(uri);
+            });
+            filterCacheWatcher.onDidDelete((e) => {
+                schemasDidChange.fire(uri);
+            });
             return content;
         }
     });
@@ -162,11 +182,20 @@ function prepareSchema(schemaPath: string, workspaceFolder:string|null): string 
                         delete filterSchema.$schema;
                         delete filterSchema.$id;
                         const option = {
-                            properties: {
-                                filter: {
-                                    const: filter
-                                },
-                                settings: filterSchema
+                            if: {
+                                properties: {
+                                    filter: {
+                                        const: filter
+                                    }
+                                }
+                            },
+                            then: {
+                                properties: {
+                                    filter: {
+                                        const: filter
+                                    },
+                                    settings: filterSchema
+                                }
                             }
                         };
                         schemaObj.definitions.profileFilter.anyOf.splice(0, 0, option);

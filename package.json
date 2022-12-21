@@ -17,7 +17,7 @@
     "onDebug",
     "onLanguage:json",
     "onLanguage:jsonc",
-    "onFileSystem:regolithScheme"
+    "onFileSystem:regolith"
   ],
   "scripts": {
     "compile:client": "tsc -b ./client/tsconfig.json",
