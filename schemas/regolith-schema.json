@@ -39,7 +39,7 @@
                 }
             },
             "additionalProperties": false,
-            "$comment": "The following anyOf is added to support custom settings schema",
+            "$comment": "The following anyOf is added to support custom settings schema. It needs an empty object at the end, because otherwise it will throw a lot of errors.",
             "anyOf": [
                 {
                 }

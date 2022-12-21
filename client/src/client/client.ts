@@ -151,14 +151,13 @@ function prepareSchema(schemaPath: string, workspaceFolder:string|null): string 
     }
     const schemaObj = JSON.parse(schema);
     if (fs.existsSync(path.join(workspaceFolder, 'config.json'))) {
-        console.log('config.json exists');
         const config = JSON.parse(fs.readFileSync(path.join(workspaceFolder, 'config.json'), 'utf8'));
         if (config && config.regolith && config.regolith.filterDefinitions) {
-            console.log('config.json has regolith section and filter definitions');
             const filters = Object.keys(config.regolith.filterDefinitions);
             for (const filter of filters) {
-                if (config.regolith.filterDefinitions[filter].url && fs.existsSync(path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/schema.json'))) {
-                    const filterSchema = JSON.parse(fs.readFileSync(path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/schema.json'), 'utf8'));
+                const filterSchemaPath = path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/schema.json');
+                if (config.regolith.filterDefinitions[filter].url && fs.existsSync(filterSchemaPath)) {
+                    const filterSchema = JSON.parse(fs.readFileSync(filterSchemaPath, 'utf8'));
                     if (filterSchema) {
                         delete filterSchema.$schema;
                         delete filterSchema.$id;
@@ -174,11 +173,7 @@ function prepareSchema(schemaPath: string, workspaceFolder:string|null): string 
                     }
                 }
             }
-        } else {
-            console.log('config.json does not have regolith section or filter definitions');
         }
-    } else {
-        console.log('config.json does not exist');
     }
     return JSON.stringify(schemaObj, null, 2);
 }
