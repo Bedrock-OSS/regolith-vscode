@@ -4,27 +4,28 @@ import * as JSONC from "jsonc-parser";
 import { RegolithConfigDocument } from '../regolithConfig';
 import fs from 'fs';
 
-const filterPath = ["regolith", "profiles", "*", "filters", "*", "filter"];
+// const filterPath = ["regolith", "profiles", "*", "filters", "*", "filter"];
 const profilePath = ["regolith", "profiles", "*", "filters", "*", "profile"];
 
 export function onCompletionRequestAsync(event:CompletionParams):CompletionItem[] | CompletionList | undefined | null {
 	let doc = getDocument(event.textDocument.uri);
 	if (doc && doc.tree) {
 		const location = JSONC.getLocation(doc.doc.getText(), doc.doc.offsetAt(event.position));
-		if (location.matches(filterPath) && !location.isAtPropertyKey) {
-			return Object.keys(doc.getFilterDefinitions()).map((key) => {
-				return {
-					label: key,
-					kind: CompletionItemKind.Module,
-					detail: key,
-					insertText: key,
-					data: {
-						uri: event.textDocument.uri,
-						type: "filter",
-					},
-				};
-			});
-		} else if (location.matches(profilePath) && !location.isAtPropertyKey) {
+		// if (location.matches(filterPath) && !location.isAtPropertyKey) {
+		// 	return Object.keys(doc.getFilterDefinitions()).map((key) => {
+		// 		return {
+		// 			label: key,
+		// 			kind: CompletionItemKind.Module,
+		// 			detail: key,
+		// 			insertText: key,
+		// 			data: {
+		// 				uri: event.textDocument.uri,
+		// 				type: "filter",
+		// 			},
+		// 		};
+		// 	});
+		// } else 
+		if (location.matches(profilePath) && !location.isAtPropertyKey) {
 			return Object.keys(doc.getProfiles()).map((key) => {
 				return {
 					label: key,

@@ -149,7 +149,7 @@ export function setupClient(context: vscode.ExtensionContext) {
                 schemasDidChange.fire(uri);
             });
             filterCacheWatcher?.dispose();
-            filterCacheWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], '.regolith/cache/filters/*/schema.json'), false, false, false);
+            filterCacheWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], '.regolith/cache/filters/*/*.*'), false, false, false);
             filterCacheWatcher.onDidChange((e) => {
                 schemasDidChange.fire(uri);
             });
@@ -176,30 +176,39 @@ function prepareSchema(schemaPath: string, workspaceFolder:string|null): string 
             const filters = Object.keys(config.regolith.filterDefinitions);
             for (const filter of filters) {
                 const filterSchemaPath = path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/schema.json');
-                if (config.regolith.filterDefinitions[filter].url && fs.existsSync(filterSchemaPath)) {
-                    const filterSchema = JSON.parse(fs.readFileSync(filterSchemaPath, 'utf8'));
-                    if (filterSchema) {
-                        delete filterSchema.$schema;
-                        delete filterSchema.$id;
-                        const option = {
-                            if: {
-                                properties: {
-                                    filter: {
-                                        const: filter
-                                    }
-                                }
-                            },
-                            then: {
-                                properties: {
-                                    filter: {
-                                        const: filter
-                                    },
-                                    settings: filterSchema
-                                }
+                if (config.regolith.filterDefinitions[filter].url) {
+                    const option: any = {
+                        properties: {
+                            filter: {
+                                const: filter
                             }
-                        };
-                        schemaObj.definitions.profileFilter.anyOf.splice(0, 0, option);
+                        }
+                    };
+                    if (fs.existsSync(filterSchemaPath)) {
+                        const filterSchema = JSON.parse(fs.readFileSync(filterSchemaPath, 'utf8'));
+                        if (filterSchema) {
+                            delete filterSchema.$schema;
+                            delete filterSchema.$id;
+                            option.properties.settings = filterSchema;
+                        }
                     }
+                    const completionMd = path.join(workspaceFolder, '.regolith/cache/filters/' + filter + '/completion.md');
+                    if (fs.existsSync(completionMd)) {
+                        option.properties.filter.markdownDescription = fs.readFileSync(completionMd, 'utf8');
+                    } else {
+                        option.properties.filter.markdownDescription = "Version: " + config.regolith.filterDefinitions[filter].version + "\n\nURL: " + config.regolith.filterDefinitions[filter].url;
+                    }
+                    schemaObj.definitions.profileFilter.anyOf.splice(0, 0, option);
+                } else if (config.regolith.filterDefinitions[filter].runWith) {
+                    const option: any = {
+                        properties: {
+                            filter: {
+                                const: filter,
+                                markdownDescription: "Type: " + config.regolith.filterDefinitions[filter].runWith
+                            }
+                        }
+                    };
+                    schemaObj.definitions.profileFilter.anyOf.splice(0, 0, option);
                 }
             }
         }
