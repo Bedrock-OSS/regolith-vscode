@@ -20,7 +20,7 @@ export class RegolithConfigDocument {
 	}
 
 	public isRegolithDocument(): boolean {
-		return !!this.object.regolith;
+		return !!this.object?.regolith;
 	}
 
 	public hasDefinitions(): boolean {
