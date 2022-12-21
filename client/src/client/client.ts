@@ -10,6 +10,7 @@ import {
     TerminatedEvent
 } from "@vscode/debugadapter";
 import fs from "fs";
+import * as JSONC from "jsonc-parser";
 
 export function setupClient(context: vscode.ExtensionContext) {
     console.log("starting minecraft language client");
@@ -171,7 +172,7 @@ function prepareSchema(schemaPath: string, workspaceFolder:string|null): string 
     }
     const schemaObj = JSON.parse(schema);
     if (fs.existsSync(path.join(workspaceFolder, 'config.json'))) {
-        const config = JSON.parse(fs.readFileSync(path.join(workspaceFolder, 'config.json'), 'utf8'));
+        const config = JSONC.parse(fs.readFileSync(path.join(workspaceFolder, 'config.json'), 'utf8'));
         if (config && config.regolith && config.regolith.filterDefinitions) {
             const filters = Object.keys(config.regolith.filterDefinitions);
             for (const filter of filters) {
