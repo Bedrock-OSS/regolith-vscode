@@ -59,11 +59,11 @@ function getFilterDocumentation(filterName:string, doc:RegolithConfigDocument):M
 			};
 		} else if (filter.url) {
 			if (fs.existsSync(doc.resolvePath(".regolith/cache/filters/" + filterName))) {
-				let readme = fs.readdirSync(doc.resolvePath(".regolith/cache/filters/" + filterName)).filter((file) => file.toLowerCase().endsWith("readme.md"));
-				if (readme.length > 0) {
+				let completion = fs.readdirSync(doc.resolvePath(".regolith/cache/filters/" + filterName)).filter((file) => file.toLowerCase().endsWith("completion.md"));
+				if (completion.length > 0) {
 					return {
 						kind: "markdown",
-						value: fs.readFileSync(doc.resolvePath(".regolith/cache/filters/" + filterName + "/" + readme[0])).toString()
+						value: fs.readFileSync(doc.resolvePath(".regolith/cache/filters/" + filterName + "/" + completion[0])).toString()
 					};
 				}
 			}
