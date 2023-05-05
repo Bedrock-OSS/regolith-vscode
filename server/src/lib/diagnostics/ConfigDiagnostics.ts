@@ -86,7 +86,8 @@ function checkRemoteFilterDefinition(filterDefinitionName: string, doc:RegolithC
 			]);
 		} else {
 			const filter = JSON.parse(fs.readFileSync(doc.resolvePath(".regolith/cache/filters/" + filterDefinitionName + "/filter.json"), "utf8"));
-			if (filter.version !== filterDefinition.version) {
+			// TODO: Add checking for newer latest/HEAD version and caching it
+			if (filter.version !== filterDefinition.version && filterDefinition.version !== "latest" && filterDefinition.version !== "HEAD") {
 				diagnosticsBuilder.addDiagnosticForValue(["regolith", "filterDefinitions", filterDefinitionName, "version"], "Filter " + filterDefinitionName + " is outdated", DiagnosticSeverity.Warning,[
 					{
 						title: "Install all filters",
