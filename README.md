@@ -29,6 +29,10 @@ Add a `schema.json` file to the root of the filter folder. This file will be inc
 
 ## Release Notes
 
+### 0.0.2
+
+Added a way to provide arguments for `regolith run` command
+
 ### 0.0.1
 
 Initial release
