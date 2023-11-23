@@ -91,6 +91,11 @@
                 "type": "string",
                 "description": "Regolith profile to run",
                 "default": "default"
+              },
+              "arguments": {
+                "type": "array",
+                "description": "Arguments to pass to Regolith",
+                "default": []
               }
             }
           }

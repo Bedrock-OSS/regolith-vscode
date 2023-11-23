@@ -112,6 +112,9 @@ export function setupClient(context: vscode.ExtensionContext) {
                     opts['cwd'] = session.workspaceFolder.uri.fsPath;
                 }
                 let dbgArgs = ['run', session.configuration.profile || 'default'];
+                if (session.configuration.arguments) {
+                    dbgArgs.push(...session.configuration.arguments);
+                }
                 child = cp.spawn('regolith', dbgArgs, opts);
                 if (!child) {
                     reject(new Error("Could not start regolith"));
