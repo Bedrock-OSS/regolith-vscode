@@ -75,9 +75,19 @@ function checkRemoteFilterDefinition(filterDefinitionName: string, doc:RegolithC
 		if (!fs.existsSync(doc.resolvePath(".regolith/cache/filters/" + filterDefinitionName + "/filter.json"))) {
 			diagnosticsBuilder.addDiagnosticForKey(["regolith", "filterDefinitions", filterDefinitionName], "Filter " + filterDefinitionName + " not installed", DiagnosticSeverity.Warning,[
 				{
-					title: "Install all filters",
+					title: "Install " + filterDefinitionName + " filter",
 					kind: CodeActionKind.QuickFix,
 					isPreferred: true,
+					command: {
+						title: "Install all filter",
+						command: "regolith.install_single",
+						arguments: [filterDefinitionName, filterDefinition.version]
+					}
+				},
+				{
+					title: "Install all filters",
+					kind: CodeActionKind.QuickFix,
+					isPreferred: false,
 					command: {
 						title: "Install all filter",
 						command: "regolith.install"
@@ -89,6 +99,16 @@ function checkRemoteFilterDefinition(filterDefinitionName: string, doc:RegolithC
 			// TODO: Add checking for newer latest/HEAD version and caching it
 			if (filter.version !== filterDefinition.version && filterDefinition.version !== "latest" && filterDefinition.version !== "HEAD") {
 				diagnosticsBuilder.addDiagnosticForValue(["regolith", "filterDefinitions", filterDefinitionName, "version"], "Filter " + filterDefinitionName + " is outdated", DiagnosticSeverity.Warning,[
+					{
+						title: "Install " + filterDefinitionName + " filter",
+						kind: CodeActionKind.QuickFix,
+						isPreferred: true,
+						command: {
+							title: "Install all filter",
+							command: "regolith.install_single",
+							arguments: [filterDefinitionName, filterDefinition.version]
+						}
+					},
 					{
 						title: "Install all filters",
 						kind: CodeActionKind.QuickFix,

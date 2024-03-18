@@ -84,21 +84,38 @@ export function setupClient(context: vscode.ExtensionContext) {
             }
         });
     });
-    vscode.commands.registerCommand("regolith.install_single", () => {
-        vscode.window.showInputBox({
-            prompt: "Enter the name of the filter you want to install",
-            placeHolder: "filter name",
-        }).then((filterName) => {
-            if (filterName) {
-                TerminalWrapper.runCommand("regolith", ["install", filterName], (code: number) => {
-                    if (code === 0) {
-                        vscode.window.showInformationMessage("Regolith filter " + filterName + " installed successfully");
-                    } else {
-                        vscode.window.showErrorMessage("Regolith failed to install filter " + filterName);
-                    }
-                });
+    vscode.commands.registerCommand("regolith.install_single", (filterName, filterVersion) => {
+        if (filterName && filterName.length > 0) {
+            const args = ["install"];
+            if (filterVersion) {
+                args.push(filterName + '==' + filterVersion);
+                args.push('-u');
+            } else {
+                args.push(filterName);
             }
-        });
+            TerminalWrapper.runCommand("regolith", args, (code: number) => {
+                if (code === 0) {
+                    vscode.window.showInformationMessage("Regolith filter " + filterName + " installed successfully");
+                } else {
+                    vscode.window.showErrorMessage("Regolith failed to install filter " + filterName);
+                }
+            });
+        } else {
+            vscode.window.showInputBox({
+                prompt: "Enter the name of the filter you want to install",
+                placeHolder: "filter name",
+            }).then((filterName) => {
+                if (filterName) {
+                    TerminalWrapper.runCommand("regolith", ["install", filterName], (code: number) => {
+                        if (code === 0) {
+                            vscode.window.showInformationMessage("Regolith filter " + filterName + " installed successfully");
+                        } else {
+                            vscode.window.showErrorMessage("Regolith failed to install filter " + filterName);
+                        }
+                    });
+                }
+            });
+        }
     });
     vscode.debug.registerDebugAdapterDescriptorFactory("regolith", {
         createDebugAdapterDescriptor(session: vscode.DebugSession, executable: vscode.DebugAdapterExecutable | undefined): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
