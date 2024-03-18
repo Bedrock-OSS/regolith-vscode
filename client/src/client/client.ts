@@ -115,6 +115,9 @@ export function setupClient(context: vscode.ExtensionContext) {
                 if (session.configuration.arguments) {
                     dbgArgs.push(...session.configuration.arguments);
                 }
+                if (session.configuration.experiments) {
+                    dbgArgs.push('--experiments=' + session.configuration.experiments.join(','));
+                }
                 child = cp.spawn('regolith', dbgArgs, opts);
                 if (!child) {
                     reject(new Error("Could not start regolith"));

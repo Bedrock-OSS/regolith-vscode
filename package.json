@@ -96,6 +96,15 @@
                 "type": "array",
                 "description": "Arguments to pass to Regolith",
                 "default": []
+              },
+              "experiments": {
+                "type": "array",
+                "description": "Experiments to enable in Regolith",
+                "default": [],
+                "items": {
+                  "type": "string",
+                  "enum": ["size_time_check"]
+                }
               }
             }
           }
