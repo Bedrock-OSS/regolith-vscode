@@ -2,50 +2,49 @@
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"type": "object",
 	"description": "The root object of Regolith's config.json file",
-    "definitions": {
-        "profileFilter": {
-            "properties": {
-                "disabled": {
-                    "type": "boolean",
-                    "description": "Whether the filter is disabled. The disabled filters are not applied, it's the same as if the filter was not specified in the profile."
-                },
-                "filter": {
-                    "type": "string",
-                    "description": "The name of the filter that matches one of the filter names from filterDefinitions."
-                },
-                "profile": {
-                    "type": "string",
-                    "description": "The name of another profile. Profiles can reference each other as long as the relation is not circular."
-                },
-                "when": {
-                    "type": "string",
-                    "description": "An expression that is evaluated by Regolith to decide whether the filter should be executed.",
-                    "examples": [
-                        "os == \"windows\"",
-                        "arch == \"amd64\"",
-                        "debug == true && version == \"0.0.18\""
-                    ]
-                },
-                "settings": {
-                    "type": "object",
-                    "description": "The object with settings passed in JSON fromat to the filter as its first command line argument."
-                },
-                "arguments": {
-                    "type": "array",
-                    "description": "The list of the command line arguments passed to the filter. If combined with settings, the settings will be passed as the first argument and the rest of the arguments will be passet in later arguments.",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            },
-            "additionalProperties": false,
-            "$comment": "The following anyOf is added to support custom settings schema. It needs an empty object at the end, because otherwise it will throw a lot of errors.",
-            "anyOf": [
-                {
-                }
-            ]
-        }
-    },
+	"definitions": {
+		"profileFilter": {
+			"properties": {
+				"disabled": {
+					"type": "boolean",
+					"description": "Whether the filter is disabled. The disabled filters are not applied, it's the same as if the filter was not specified in the profile."
+				},
+				"filter": {
+					"type": "string",
+					"description": "The name of the filter that matches one of the filter names from filterDefinitions."
+				},
+				"profile": {
+					"type": "string",
+					"description": "The name of another profile. Profiles can reference each other as long as the relation is not circular."
+				},
+				"when": {
+					"type": "string",
+					"description": "An expression that is evaluated by Regolith to decide whether the filter should be executed.",
+					"examples": [
+						"os == \"windows\"",
+						"arch == \"amd64\"",
+						"debug == true && version == \"0.0.18\""
+					]
+				},
+				"settings": {
+					"type": "object",
+					"description": "The object with settings passed in JSON format to the filter as its first command line argument."
+				},
+				"arguments": {
+					"type": "array",
+					"description": "The list of the command line arguments passed to the filter. If combined with settings, the settings will be passed as the first argument and the rest of the arguments will be passet in later arguments.",
+					"items": {
+						"type": "string"
+					}
+				}
+			},
+			"additionalProperties": false,
+			"$comment": "The following anyOf is added to support custom settings schema. It needs an empty object at the end, because otherwise it will throw a lot of errors.",
+			"anyOf": [
+				{}
+			]
+		}
+	},
 	"properties": {
 		"name": {
 			"type": "string",
@@ -93,7 +92,8 @@
 											"preview",
 											"local",
 											"exact",
-											"world"
+											"world",
+											"none"
 										]
 									},
 									"rpPath": {
@@ -102,6 +102,14 @@
 									},
 									"bpPath": {
 										"description": "The export behavior pack path for the 'exact' export target.",
+										"type": "string"
+									},
+									"rpName": {
+										"description": "The name of the directory for the RP files export defined as an expression evaluated with go-simple-eval (https://github.com/stirante/go-simple-eval/).",
+										"type": "string"
+									},
+									"bpName": {
+										"description": "The name of the directory for the BP files export defined as an expression evaluated with go-simple-eval (https://github.com/stirante/go-simple-eval/).",
 										"type": "string"
 									},
 									"worldName": {
@@ -116,9 +124,9 @@
 							},
 							"filters": {
 								"type": "array",
-								"description": "The list of the filters used by the profile and their settigns.",
+								"description": "The list of the filters used by the profile and their settings.",
 								"items": {
-                                    "$ref": "#/definitions/profileFilter"
+									"$ref": "#/definitions/profileFilter"
 								}
 							}
 						},
@@ -136,7 +144,7 @@
 								"properties": {
 									"url": {
 										"type": "string",
-										"description": "The URL to the reomte filter."
+										"description": "The URL to the remote filter."
 									},
 									"version": {
 										"type": "string",
