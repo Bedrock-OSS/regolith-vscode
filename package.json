@@ -2,7 +2,7 @@
   "name": "regolith",
   "displayName": "Regolith",
   "description": "VSCode addon for Regolith",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./client/out/extension.js",
   "repository": {
     "url": "https://github.com/Bedrock-OSS/regolith-vscode"
